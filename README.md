@@ -81,7 +81,7 @@ GTRL-Internship-Assignment/
 ```bash
 git clone https://github.com/AbrarKhan-Avro/GTRL-Internship-Assignment.git
 cd GTRL-Internship-Assignment
-
+```
 ---
 
 ## 🏁 Summary
