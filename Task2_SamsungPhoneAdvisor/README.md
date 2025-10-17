@@ -92,7 +92,7 @@ Task2_SamsungPhoneAdvisor/
 4. **Run the DB schema SQL to create tables and indexes:**
 
    ```bash
-   psql -d samsung_db -f db/models.sql
+   psql -U postgres -d samsung_db -f db/models.sql
    ```
 
 5. **Add environment variables to `.env` (create the file in project root):**
