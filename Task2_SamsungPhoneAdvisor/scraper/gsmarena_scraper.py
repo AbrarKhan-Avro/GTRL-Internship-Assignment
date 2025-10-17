@@ -18,7 +18,7 @@ HEADERS_LIST = [
                    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"},
 ]
 
-OUTPUT_FILE = Path("samsung_phones.json")
+OUTPUT_FILE = Path("data/samsung_phones.json")
 DATA = []
 
 def get_soup(url):
