@@ -1,6 +1,6 @@
 import json
 import decimal
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 from generator.openai_client import generate_response
 
 # ----------------------------------------------------------------------
@@ -39,53 +39,60 @@ def summarize_specs(data: Dict[str, Any]) -> str:
     storage = data.get("memory", {}).get("Summary")
 
     prompt = f"""
-Summarize the key specifications of {name} ({year if year else 'N/A'}).
-Use natural, informative language suitable for a tech assistant.
-Mention display, battery, camera, chipset/platform, and storage details.
+    Summarize the key specifications of {name} ({year if year else 'N/A'}).
+    Use natural, informative language suitable for a tech assistant.
+    Mention display, battery, camera, chipset/platform, and storage details.
 
-Data (JSON):
-{safe_json_dumps(data, indent=2)}
-"""
-    return generate_response(prompt)
+    Data (JSON):
+    {safe_json_dumps(data, indent=2)}
+    """
+
+    # Allow a bit more tokens for a full single-device spec
+    return generate_response(prompt, max_tokens=1500)
 
 # ----------------------------------------------------------------------
-def summarize_comparison(data: Dict[str, Any], focus: list) -> str:
+def summarize_comparison(data: Dict[str, Any], focus: Optional[List[str]]) -> str:
     """Compose a comparison prompt for two phones."""
     phones = data.get("phones", [])
     if len(phones) < 2:
         return "I need at least two valid phones to compare."
 
-    names = [p.get("name") for p in phones]
+    names = [p.get("name", "unknown") for p in phones]
     focus_text = ", ".join(focus) if focus else "overall performance and value"
 
     prompt = f"""
-Compare the following Samsung phones for {focus_text}:
-{safe_json_dumps(phones, indent=2)}
+    Compare the following Samsung phones for {focus_text}:
+    {safe_json_dumps(phones, indent=2)}
 
-Provide a detailed but concise comparison.
-Highlight differences in camera, battery, display, and performance when relevant.
-End with a short, clear recommendation about which one is better for {focus_text}.
-"""
-    return generate_response(prompt)
+    Provide a detailed but concise comparison.
+    Highlight differences in camera, battery, display, and performance when relevant.
+    End with a short, clear recommendation about which one is better for {focus_text}.
+    Make sure the response is complete and doesn't get cut off.
+    """
+
+    # Comparisons can be long — request more tokens
+    return generate_response(prompt, max_tokens=2000)
 
 # ----------------------------------------------------------------------
-def summarize_best_choice(data: Dict[str, Any], focus: list, limit: float) -> str:
+def summarize_best_choice(data: Dict[str, Any], focus: Optional[List[str]], limit: float) -> str:
     """Prompt for recommending the best phone under a price."""
     if not data:
         return "I couldn't find any phones under your price range."
 
-    name = data.get("name")
+    name = data.get("name", "Unknown")
     prompt = f"""
-You are a Samsung Phone Advisor.
-A user asked for the best Samsung phone under ${limit}, focusing on {', '.join(focus) if focus else 'overall performance'}.
+    You are a Samsung Phone Advisor.
+    A user asked for the best Samsung phone under ${limit}, focusing on {', '.join(focus) if focus else 'overall performance'}.
 
-Here are details of a suggested phone:
-{safe_json_dumps(data, indent=2)}
+    Here are details of a suggested phone:
+    {safe_json_dumps(data, indent=2)}
 
-Write a short recommendation explaining why {name} is a great choice.
-Mention its main strengths and who it’s best suited for.
-"""
-    return generate_response(prompt)
+    Write a short recommendation explaining why {name} is a great choice.
+    Mention its main strengths and who it’s best suited for.
+    Ensure the answer is complete and not truncated.
+    """
+
+    return generate_response(prompt, max_tokens=1400)
 
 # ----------------------------------------------------------------------
 #                  FINAL ROUTER FUNCTION

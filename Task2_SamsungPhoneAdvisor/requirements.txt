@@ -5,6 +5,7 @@ sqlalchemy
 pydantic
 python-dotenv
 openai
+groq
 spacy
 rapidfuzz
 pandas
