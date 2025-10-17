@@ -51,12 +51,12 @@ Task2_SamsungPhoneAdvisor/
 ├── data/
 │   ├── samsung_phones.json     # Raw scraped data (GSMArena)
 │   ├── processed_phones.json   # Cleaned structured data (output of processor)
-|   └── process_raw_data.py     # Cleans and groups raw scraped data
-|
-├── db/
-│   ├── import_json.py
-|   └── models.sql    
+│   └── process_raw_data.py     # Cleans and groups raw scraped data
 │
+├── db/
+│   ├── import_json.py         # Imports processed JSON into PostgreSQL
+│   └── models.sql             # DB schema (tables, indexes)
+│   
 ├── requirements.txt
 ├── .env                        # Environment variables (do not commit)
 └── README.md
@@ -73,7 +73,7 @@ Task2_SamsungPhoneAdvisor/
    # Linux/Mac
    source venv/bin/activate
    # Windows
-   venv\Scripts\activate
+   venv/Scripts/activate
    ```
 
 2. **Install dependencies:**
@@ -89,7 +89,13 @@ Task2_SamsungPhoneAdvisor/
    CREATE DATABASE samsung_db;
    ```
 
-4. **Add environment variables to `.env` (create the file in project root):**
+4. **Run the DB schema SQL to create tables and indexes:**
+
+   ```bash
+   psql -d samsung_db -f db/models.sql
+   ```
+
+5. **Add environment variables to `.env` (create the file in project root):**
 
    ```text
    # Replace placeholders with your credentials and API key
@@ -102,21 +108,29 @@ Task2_SamsungPhoneAdvisor/
 
    **Do not** commit `.env` to the repository.
 
-5. **Process raw data (one-time):**
+6. **Scrape data (one-time or when you want fresh data):**
 
    ```bash
-   python app/processor.py
+   python -m scraper.gsmarena_scraper
+   ```
+
+   This writes `data/samsung_phones.json` (raw scraped JSON). Keep the scraper gentle — it already includes randomized sleeps to avoid blocking.
+
+7. **Process raw data into structured JSON:**
+
+   ```bash
+   python -m data.process_raw_data
    ```
 
    This reads `data/samsung_phones.json` and writes `data/processed_phones.json`.
 
-6. **Load processed data into the database:**
+8. **Import processed data into the PostgreSQL database:**
 
    ```bash
-   python app/load_data.py
+   python -m db.import_json
    ```
 
-   This connects to the `DATABASE_URL` and inserts cleaned records into the `phones` table.
+   This script reads `data/processed_phones.json` and inserts cleaned records into the `phones` table.
 
 ---
 
@@ -125,7 +139,7 @@ Task2_SamsungPhoneAdvisor/
 Start the FastAPI server:
 
 ```bash
-python api/app.py
+python -m api.app
 ```
 
 Expected output (port follows `PORT` env var, default set to 8010):
@@ -198,13 +212,13 @@ Run individual modules interactively:
 
 ```bash
 # Test the NLU module
-python nlu/nlu.py
+python -m nlu.nlu
 
 # Test the Retriever module
-python retriever/retriever.py
+python -m retriever.retriever
 
 # Test the Generator (requires GROQ_API_KEY)
-python generator/generator.py
+python -m generator.generator
 ```
 
 ---
@@ -215,3 +229,4 @@ python generator/generator.py
 * Groq API must be active for LLM-based answer generation.
 * Ensure `.env` contains correct DB credentials and API key.
 
+---
