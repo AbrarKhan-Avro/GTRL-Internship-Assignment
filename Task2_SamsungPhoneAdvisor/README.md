@@ -31,9 +31,9 @@ An intelligent **Samsung smartphone question-answering system** that understands
 ```
 Task2_SamsungPhoneAdvisor/
 │
-├── app/
-│   ├── scraper.py              # GSMArena scraper (delicate; do not modify)
-│   ├── processor.py            # Cleans and groups raw scraped data
+├── scraper/
+│   └── gsmarena_scraper.py              # GSMArena scraper (delicate; do not modify)
+│   
 │
 ├── nlu/
 │   └── nlu.py                  # Natural-language understanding module
@@ -50,7 +50,12 @@ Task2_SamsungPhoneAdvisor/
 │
 ├── data/
 │   ├── samsung_phones.json     # Raw scraped data (GSMArena)
-│   └── processed_phones.json   # Cleaned structured data (output of processor)
+│   ├── processed_phones.json   # Cleaned structured data (output of processor)
+|   └── process_raw_data.py     # Cleans and groups raw scraped data
+|
+├── db/
+│   ├── import_json.py
+|   └── models.sql    
 │
 ├── requirements.txt
 ├── .env                        # Environment variables (do not commit)

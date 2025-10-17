@@ -76,6 +76,12 @@ GTRL-Internship-Assignment/
 └── README.md                        # Main description (this file)
 ```
 
+## 📥 Clone the Repository
+
+```bash
+git clone https://github.com/AbrarKhan-Avro/GTRL-Internship-Assignment.git
+cd GTRL-Internship-Assignment
+
 ---
 
 ## 🏁 Summary
