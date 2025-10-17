@@ -114,7 +114,7 @@ Task2_SamsungPhoneAdvisor/
    python -m scraper.gsmarena_scraper
    ```
 
-   This writes `data/samsung_phones.json` (raw scraped JSON). Keep the scraper gentle — it already includes randomized sleeps to avoid blocking.
+   This writes `data/samsung_phones.json` (raw scraped JSON). Keep the scraper gentle — it already includes randomized sleeps to avoid blocking. The scraper takes **a long time** to avoid **bot restriction** from GSMArena, **be patient**. If you are **already blocked (Due to previous testing "429")**, I recommend using **VPN**. 
 
 7. **Process raw data into structured JSON:**
 
