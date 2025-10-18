@@ -3,9 +3,6 @@ import decimal
 from typing import Dict, Any, Optional, List
 from generator.openai_client import generate_response
 
-# ----------------------------------------------------------------------
-#                SAFE JSON SERIALIZATION HANDLER
-# ----------------------------------------------------------------------
 class DecimalEncoder(json.JSONEncoder):
     """Custom JSON encoder that safely handles Decimal and other types."""
     def default(self, obj):
@@ -21,9 +18,6 @@ def safe_json_dumps(data, **kwargs):
     """Safely dump Python objects to JSON, converting Decimals and others."""
     return json.dumps(data, cls=DecimalEncoder, **kwargs)
 
-# ----------------------------------------------------------------------
-#                       SUMMARY FUNCTIONS
-# ----------------------------------------------------------------------
 def summarize_specs(data: Dict[str, Any]) -> str:
     """Compose a text summary prompt for a single phone."""
     if not data:
@@ -50,7 +44,6 @@ def summarize_specs(data: Dict[str, Any]) -> str:
     # Allow a bit more tokens for a full single-device spec
     return generate_response(prompt, max_tokens=1500)
 
-# ----------------------------------------------------------------------
 def summarize_comparison(data: Dict[str, Any], focus: Optional[List[str]]) -> str:
     """Compose a comparison prompt for two phones."""
     phones = data.get("phones", [])
@@ -73,7 +66,6 @@ def summarize_comparison(data: Dict[str, Any], focus: Optional[List[str]]) -> st
     # Comparisons can be long — request more tokens
     return generate_response(prompt, max_tokens=2000)
 
-# ----------------------------------------------------------------------
 def summarize_best_choice(data: Dict[str, Any], focus: Optional[List[str]], limit: float) -> str:
     """Prompt for recommending the best phone under a price."""
     if not data:
@@ -94,9 +86,6 @@ def summarize_best_choice(data: Dict[str, Any], focus: Optional[List[str]], limi
 
     return generate_response(prompt, max_tokens=1400)
 
-# ----------------------------------------------------------------------
-#                  FINAL ROUTER FUNCTION
-# ----------------------------------------------------------------------
 def generate_final_answer(retrieved: Dict[str, Any], parsed_query: Dict[str, Any]) -> str:
     """Selects which summarization method to use based on query type."""
     rtype = retrieved.get("type")

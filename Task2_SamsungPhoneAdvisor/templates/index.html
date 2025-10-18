@@ -52,7 +52,7 @@
       msg.classList.add("bg-gray-700", "text-gray-100");
     }
 
-    // ✅ Render Markdown if enabled
+    // Render Markdown if enabled
     msg.innerHTML = isMarkdown ? marked.parse(text) : text;
 
     chatBox.appendChild(msg);
@@ -83,7 +83,7 @@
 
       thinkingMsg.remove();
 
-      // ✅ Render AI answer as Markdown
+      // Render AI answer as Markdown
       addMessage(data.answer || "No response.", "bot", true);
     } catch (err) {
       thinkingMsg.remove();
