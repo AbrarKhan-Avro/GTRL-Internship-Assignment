@@ -9,17 +9,12 @@ from dotenv import load_dotenv
 import os
 from difflib import SequenceMatcher
 
-# 🔹 Load environment variables
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:%40mbush99@localhost:5432/samsung_db")
 
-# 🔹 Load spaCy English NLP model
 # (Run once before using: python -m spacy download en_core_web_sm)
 nlp = spacy.load("en_core_web_sm")
 
-# -------------------------------------------------------------------------
-#                 DATABASE CONNECTION FOR MODEL NAMES
-# -------------------------------------------------------------------------
 def get_all_model_names() -> List[str]:
     """Fetch all phone names from the DB for fuzzy matching."""
     conn = psycopg2.connect(DATABASE_URL)
@@ -32,9 +27,6 @@ def get_all_model_names() -> List[str]:
 
 ALL_MODELS = get_all_model_names()
 
-# -------------------------------------------------------------------------
-#                        INTENT DETECTION
-# -------------------------------------------------------------------------
 def detect_intent(question: str) -> str:
     """Detect what kind of question the user is asking."""
     q = question.lower()
@@ -53,9 +45,6 @@ def detect_intent(question: str) -> str:
 
     return "general"
 
-# -------------------------------------------------------------------------
-#                     FEATURE / FOCUS EXTRACTION
-# -------------------------------------------------------------------------
 def extract_focus_features(question: str) -> List[str]:
     """
     Detect key features being asked about (battery, camera, display, etc.)
@@ -76,9 +65,6 @@ def extract_focus_features(question: str) -> List[str]:
             found.append(key)
     return found
 
-# -------------------------------------------------------------------------
-#                     PRICE / BUDGET EXTRACTION
-# -------------------------------------------------------------------------
 def extract_price_filter(question: str) -> float:
     """
     Detect if user mentions a price limit (e.g., under $1000, below 700 USD).
@@ -90,9 +76,6 @@ def extract_price_filter(question: str) -> float:
         return float(match.group(1))
     return None
 
-# -------------------------------------------------------------------------
-#                MODEL MATCHER  —  Full-Name + Short-Name Logic
-# -------------------------------------------------------------------------
 def extract_model_names(question: str) -> Dict[str, Any]:
     """
     Robust Samsung phone model extractor.
@@ -104,15 +87,12 @@ def extract_model_names(question: str) -> Dict[str, Any]:
     q_clean = re.sub(r"[^a-z0-9\s\+]", " ", q_raw)
     q_clean = re.sub(r"\s+", " ", q_clean).strip()
 
-    # --- 1. Tokenize potential model phrases ---
-    # Capture mentions like: s25, s25 ultra, galaxy s25 fe
     candidates = re.findall(
         r"\b(?:galaxy\s+)?(?:s|a|m|f)\d{1,3}(?:\s?(?:ultra|fe|lite|plus|pro|4g|5g))?\b",
         q_clean
     )
     candidates = list(dict.fromkeys(candidates))  # deduplicate
 
-    # --- 2. Normalize ---
     normalized_candidates = []
     for c in candidates:
         c = c.strip()
@@ -123,7 +103,6 @@ def extract_model_names(question: str) -> Dict[str, Any]:
     matched = []
     missing = []
 
-    # --- 3. Match each candidate to database models ---
     for cand in normalized_candidates:
         best_match = None
         best_ratio = 0
@@ -141,7 +120,6 @@ def extract_model_names(question: str) -> Dict[str, Any]:
         else:
             missing.append(cand.upper())
 
-    # --- 4. Return structured result ---
     result = {"models": matched}
     if missing:
         result["missing_models"] = missing
@@ -149,9 +127,6 @@ def extract_model_names(question: str) -> Dict[str, Any]:
 
 
 
-# -------------------------------------------------------------------------
-#                     MODEL NAME DETECTION (FUZZY)
-# -------------------------------------------------------------------------
 def normalize_model_name(text: str) -> str:
     """Simplify a phone name for easier comparison."""
     text = text.lower()
@@ -160,9 +135,6 @@ def normalize_model_name(text: str) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
-# -------------------------------------------------------------------------
-#                     MASTER PARSER FUNCTION
-# -------------------------------------------------------------------------
 def parse_question(question: str) -> Dict[str, Any]:
     """Main entry point for NLU — returns structured understanding of question."""
 
@@ -198,9 +170,6 @@ def parse_question(question: str) -> Dict[str, Any]:
     return result
 
 
-# -------------------------------------------------------------------------
-#                     INTERACTIVE TESTER
-# -------------------------------------------------------------------------
 if __name__ == "__main__":
     print("🔍 Samsung Phone Advisor — NLU Module")
     print("Type 'exit' to quit.\n")

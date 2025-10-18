@@ -30,7 +30,7 @@ def extract_price(value: str):
         '₹': 0.012
     }
 
-    # Find all price+currency patterns (e.g. "€595.00", "$548.99", "INR 7199")
+    # Find all price+currency patterns
     matches = re.findall(r'([€$£₹]|USD|EUR|GBP|INR)\s?(\d+\.?\d*)', text)
     if not matches:
         # fallback: just numeric value without currency
@@ -50,7 +50,7 @@ def extract_price(value: str):
     if not usd_prices:
         return None
 
-    # if multiple prices found, take the smallest (e.g. base model)
+    # if multiple prices found, take the smallest
     return round(min(usd_prices), 2)
 
 
@@ -106,15 +106,14 @@ def main():
             model_normalized = normalize_name(name)
             launch_info = phone.get("Launch & Status", {})
 
-            # Extract year safely
+            # Extract year
             year = extract_year(launch_info.get("Year")) or extract_year(launch_info.get("Release date"))
             release_date = launch_info.get("Release date")
             status = launch_info.get("Status")
 
-            # Extract and convert price safely to USD
+            # Extract and convert price to USD
             price = extract_price(phone.get("Misc", {}).get("Price"))
 
-            # Insert data
             cur.execute("""
                 INSERT INTO phones (
                     name, model_normalized, year, release_date, status, price,

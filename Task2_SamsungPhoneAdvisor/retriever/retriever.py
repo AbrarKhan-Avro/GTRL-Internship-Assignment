@@ -5,15 +5,9 @@ from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 import os
 
-# ----------------------------------------------------------------------
-#                           CONFIG
-# ----------------------------------------------------------------------
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:%40mbush99@localhost:5432/samsung_db")
 
-# ----------------------------------------------------------------------
-#                   SAFE JSON SERIALIZATION
-# ----------------------------------------------------------------------
 def safe_json_dumps(data, **kwargs):
     """Custom JSON serializer to handle Decimal and other non-serializable objects."""
     def default(o):
@@ -22,9 +16,6 @@ def safe_json_dumps(data, **kwargs):
         return str(o)
     return json.dumps(data, default=default, **kwargs)
 
-# ----------------------------------------------------------------------
-#                     SAFE JSON LOADER
-# ----------------------------------------------------------------------
 def safe_json_load(val):
     """Safely load JSON string or return dict if already parsed."""
     if not val:
@@ -36,9 +27,6 @@ def safe_json_load(val):
     except Exception:
         return {"raw": str(val)}
 
-# ----------------------------------------------------------------------
-#                    DATABASE FETCH UTILITIES
-# ----------------------------------------------------------------------
 def fetch_phone_by_name(model_name: str) -> Optional[Dict[str, Any]]:
     """Fetch one phone by model name (exact match or close)."""
     conn = psycopg2.connect(DATABASE_URL)
@@ -141,9 +129,6 @@ def build_comparison(models: List[str]) -> Dict[str, Any]:
 
     return {"phones": results}
 
-# ----------------------------------------------------------------------
-#                  MAIN RETRIEVAL INTERFACE
-# ----------------------------------------------------------------------
 def retrieve_from_db(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
     """
     Main entry point for the retriever.
@@ -168,9 +153,6 @@ def retrieve_from_db(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
     else:
         return {"type": "unknown", "data": None}
 
-# ----------------------------------------------------------------------
-#                       TESTING ENTRY POINT
-# ----------------------------------------------------------------------
 if __name__ == "__main__":
     from nlu.nlu import parse_question
 
