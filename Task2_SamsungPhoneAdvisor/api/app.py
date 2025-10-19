@@ -1,11 +1,16 @@
+import os
+import sys
+import traceback
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-import uvicorn
-import os
-import traceback
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
 
 from nlu.nlu import parse_question
 from retriever.retriever import retrieve_from_db
@@ -13,9 +18,11 @@ from generator.generator import generate_final_answer
 
 app = FastAPI(title="Samsung Phone Advisor")
 
-# Serve static files and templates
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+static_dir = os.path.join(BASE_DIR, "static")
+templates_dir = os.path.join(BASE_DIR, "templates")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+templates = Jinja2Templates(directory=templates_dir)
 
 class AskRequest(BaseModel):
     question: str
