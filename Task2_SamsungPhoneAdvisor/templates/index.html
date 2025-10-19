@@ -4,94 +4,98 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Samsung Phone Advisor</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center min-h-screen">
-  <header class="w-full bg-gray-800 py-4 shadow-md text-center text-2xl font-semibold text-blue-400">
-    📱 Samsung Phone Advisor
+
+<body>
+  <header>
+    <h1>
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/61/Samsung_old_logo_before_year_2015.svg"
+        alt="Samsung"
+        class="logo"
+        width="100"
+      />
+      Phone Advisor
+    </h1>
   </header>
 
-  <main class="flex-1 w-full max-w-3xl p-6 space-y-4">
-    <div id="chat-box" class="bg-gray-800 rounded-lg p-4 h-[70vh] overflow-y-auto border border-gray-700 shadow-inner">
-      <div class="text-gray-400 text-center text-sm">Ask anything about Samsung phones!</div>
+  <main>
+    <div id="chat-box">
+      <div class="placeholder">💬 Ask anything about Samsung phones (e.g., “Compare S25 Ultra and S25 FE for photography”).</div>
     </div>
 
-    <form id="ask-form" class="flex gap-2">
+    <form id="ask-form">
       <input
         type="text"
         id="question"
         placeholder="Type your question..."
-        class="flex-1 p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
-      <button
-        type="submit"
-        class="px-4 py-3 bg-blue-600 rounded-lg hover:bg-blue-700 transition font-semibold">
-        Ask
-      </button>
+      <button type="submit">Ask</button>
     </form>
   </main>
 
-  <footer class="text-gray-500 text-sm py-4">
-    © 2025 Samsung Phone Advisor — Powered by Groq + FastAPI
+  <footer>
+    © 2025 <span>Samsung Phone Advisor</span> — Powered by Groq + FastAPI
   </footer>
 
   <script>
-  const form = document.getElementById("ask-form");
-  const chatBox = document.getElementById("chat-box");
+    const form = document.getElementById("ask-form");
+    const chatBox = document.getElementById("chat-box");
 
-  function addMessage(text, sender = "user", isMarkdown = false) {
-    const msg = document.createElement("div");
-    msg.classList.add("my-2", "p-3", "rounded-lg", "max-w-[85%]", "break-words", "whitespace-pre-wrap");
+    function addMessage(text, sender = "user", markdown = false) {
+      const wrapper = document.createElement("div");
+      wrapper.className = `msg ${sender}`;
 
-    if (sender === "user") {
-      msg.classList.add("bg-blue-600", "ml-auto", "text-white");
-    } else {
-      msg.classList.add("bg-gray-700", "text-gray-100");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = markdown ? marked.parse(text) : text;
+
+      wrapper.appendChild(bubble);
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Render Markdown if enabled
-    msg.innerHTML = isMarkdown ? marked.parse(text) : text;
-
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const question = document.getElementById("question").value.trim();
-    if (!question) return;
-
-    addMessage(question, "user");
-    document.getElementById("question").value = "";
-
-    const thinkingMsg = document.createElement("div");
-    thinkingMsg.classList.add("my-2", "p-3", "rounded-lg", "max-w-[80%]", "bg-gray-700", "text-gray-400", "italic");
-    thinkingMsg.innerText = "Thinking...";
-    chatBox.appendChild(thinkingMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    try {
-      const res = await fetch("/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
-      const data = await res.json();
-
-      thinkingMsg.remove();
-
-      // Render AI answer as Markdown
-      addMessage(data.answer || "No response.", "bot", true);
-    } catch (err) {
-      thinkingMsg.remove();
-      addMessage("⚠️ Error connecting to server.", "bot");
-      console.error(err);
+    function addThinking() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "msg bot";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble thinking";
+      bubble.innerHTML = `<span></span><span></span><span></span>`;
+      wrapper.appendChild(bubble);
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return wrapper;
     }
-  });
-</script>
 
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const question = document.getElementById("question").value.trim();
+      if (!question) return;
+
+      addMessage(question, "user");
+      document.getElementById("question").value = "";
+
+      const think = addThinking();
+
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+        const data = await res.json();
+
+        think.remove();
+        addMessage(data.answer || "No response.", "bot", true);
+      } catch (err) {
+        think.remove();
+        addMessage("⚠️ Error connecting to server.", "bot");
+        console.error(err);
+      }
+    });
+  </script>
 </body>
 </html>
